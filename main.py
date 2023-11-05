@@ -5,37 +5,35 @@ import matplotlib.pyplot as plt
 import pandas
 import seaborn as sns
 
-Tk().withdraw()
-
-data = {}
+import MSSQ
 
 
 def readCSV() -> pandas.DataFrame:
     file_path = filedialog.askopenfile(filetypes=[("CSV", "*.csv; *.CSV")]).name
     print(file_path)
 
-    return pandas.read_csv(file_path, index_col=0)
+    out = pandas.read_csv(file_path, sep=";", index_col=0)
+    return out
 
 
-def parse_vectors(stream: pandas.Series):
+def parse_vectors(stream: pandas.Series) -> pandas.DataFrame:
     buff = {"x": {}, "y": {}}
     for k, v in stream.items():
         vect2 = v.split(",")
         buff["x"][k] = vect2[0]
         buff["y"][k] = vect2[1]
-    buff = pandas.DataFrame(buff)
+    buff = pandas.DataFrame(buff).sort_values(inplace="true")
     print(buff)
 
     return buff
 
 
-def drawHeatmap():
+def drawHeatmap(data_in: pandas.DataFrame):
+    print(data_in)
+
     # Load the example flights dataset and convert to long-form
     flights_long = sns.load_dataset("flights")
-    flights = (
-        flights_long
-        .pivot(index="month", columns="year", values="passengers")
-    )
+    flights = (flights_long.pivot(index="month", columns="year", values="passengers"))
 
     # Draw a heatmap with the numeric values in each cell
     f, ax = plt.subplots(figsize=(9, 6))
@@ -43,8 +41,13 @@ def drawHeatmap():
     plt.show()
 
 
-data = readCSV()
-parse_vectors(data["A"])
-# drawHeatmap()
+def main():
+    Tk().withdraw()
 
-print(data)
+    # unity_data = readCSV()
+    # drawHeatmap(unity_data[["cx", "cy"]])  # find focus  # find object rest time
+    MSSQ.scoreMSSQ(readCSV(), 5)
+
+
+if __name__ == "__main__":
+    main()
