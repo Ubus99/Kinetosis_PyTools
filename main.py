@@ -1,31 +1,13 @@
 from tkinter import Tk
-from tkinter import filedialog
 
 import matplotlib.pyplot as plt
 import pandas
 import seaborn as sns
 
-import MSSQ
-
-
-def readCSV() -> pandas.DataFrame:
-    file_path = filedialog.askopenfile(filetypes=[("CSV", "*.csv; *.CSV")]).name
-    print(file_path)
-
-    out = pandas.read_csv(file_path, sep=";", index_col=0)
-    return out
-
-
-def parse_vectors(stream: pandas.Series) -> pandas.DataFrame:
-    buff = {"x": {}, "y": {}}
-    for k, v in stream.items():
-        vect2 = v.split(",")
-        buff["x"][k] = vect2[0]
-        buff["y"][k] = vect2[1]
-    buff = pandas.DataFrame(buff).sort_values(inplace="true")
-    print(buff)
-
-    return buff
+import SUS
+from MSSQ import MSSQ
+from Utils import Utils
+from Utils.Utils import readCSV
 
 
 def drawHeatmap(data_in: pandas.DataFrame):
@@ -47,6 +29,9 @@ def main():
     # unity_data = readCSV()
     # drawHeatmap(unity_data[["cx", "cy"]])  # find focus  # find object rest time
     MSSQ.scoreMSSQ(readCSV(), 5)
+    # SSQ.scoreSSQ(readCSV())
+    # sus_score = SUS.scoreSUS(Utils.readCSV())
+    plt.show()
 
 
 if __name__ == "__main__":
