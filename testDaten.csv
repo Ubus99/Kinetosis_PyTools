@@ -1,8 +1,8 @@
-timestamps,A,B,C,D,E,F,G
-123,C,A,D,H,E,G,F
-1234,D,B,E,A,F,H,G
-12345,E,C,F,B,G,A,H
-12355,F,D,G,C,H,B,A
-14545,G,E,H,D,A,C,B
-13435,H,F,A,E,B,D,C
-6567,A,G,B,F,C,E,D
+,A,B,C,D,E,F,G
+123,"2,3",A,D,H,E,G,F
+1234,"3,4",B,E,A,F,H,G
+12345,"4,5",C,F,B,G,A,H
+12355,"5,6",D,G,C,H,B,A
+14545,"6,7",E,H,D,A,C,B
+13435,"7,8",F,A,E,B,D,C
+6567,"8,9",G,B,F,C,E,D

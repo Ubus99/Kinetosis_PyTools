@@ -1,4 +1,3 @@
-import csv
 from tkinter import Tk
 from tkinter import filedialog
 
@@ -11,35 +10,23 @@ Tk().withdraw()
 data = {}
 
 
-def readCSV():
-    streams = {}
-    stream_keys = []
-
+def readCSV() -> pandas.DataFrame:
     file_path = filedialog.askopenfile(filetypes=[("CSV", "*.csv; *.CSV")]).name
     print(file_path)
 
-    with open(file_path, newline='') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-        for idx, row in enumerate(spamreader):
-            words = row[0].split(",")
-            if idx == 0:
-                # print(str(idx) + "> " + ", ".join(row))
-                words.pop(0)
-                stream_keys = words
-                for name in words:
-                    streams[name] = {}
-            else:
-                # print(str(idx) + "> " + ", ".join(row))
-                tsp = words[0]
-                words.pop(0)
-                for idx2, value in enumerate(words):
-                    streams[stream_keys[idx2]][tsp] = value
-
-    return pandas.DataFrame.from_dict(streams)
+    return pandas.read_csv(file_path, index_col=0)
 
 
-def parse_toVectors(stream):
+def parse_vectors(stream: pandas.Series):
+    buff = {"x": {}, "y": {}}
+    for k, v in stream.items():
+        vect2 = v.split(",")
+        buff["x"][k] = vect2[0]
+        buff["y"][k] = vect2[1]
+    buff = pandas.DataFrame(buff)
+    print(buff)
 
+    return buff
 
 
 def drawHeatmap():
@@ -57,6 +44,7 @@ def drawHeatmap():
 
 
 data = readCSV()
-drawHeatmap()
+parse_vectors(data["A"])
+# drawHeatmap()
 
 print(data)
