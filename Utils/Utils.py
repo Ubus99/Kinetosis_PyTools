@@ -4,12 +4,10 @@ from tkinter import Tk
 import pandas
 
 
-def readCSV() -> pandas.DataFrame:
-    Tk().withdraw()
-    file_path = filedialog.askopenfile(filetypes=[("CSV", "*.csv; *.CSV")]).name
-    print(file_path)
-
-    out = pandas.read_csv(file_path, sep=";", index_col=0)
+def readCSV(path: str) -> pandas.DataFrame:
+    print(path)
+    print()
+    out = pandas.read_csv(path, sep=";", index_col=0)
     return out
 
 

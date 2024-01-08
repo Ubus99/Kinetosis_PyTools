@@ -3,14 +3,35 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
-        <entry key="\MSSQTestDaten.csv">
+        <entry key="\MSSQ\Daten\B_1.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />
             </Attribute>
           </value>
         </entry>
-        <entry key="\MSSQ\MSSQCompiled.csv">
+        <entry key="\MSSQ\Daten\B_2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\MSSQ\Daten\P_2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\MSSQ\Daten\P_t1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\MSSQ\Daten\T_1.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />
@@ -24,7 +45,14 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\SSQTestDaten.csv">
+        <entry key="\MSSQ\Prelim_MSSQ_database.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\SSQ\Daten\P_t2.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />
@@ -38,21 +66,14 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\SUSTestDaten.csv">
+        <entry key="\SUS\SUSCompiled.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />
             </Attribute>
           </value>
         </entry>
-        <entry key="\a.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\testDaten.csv">
+        <entry key="\SUS\SUS_database.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />

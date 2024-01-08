@@ -1,3 +1,4 @@
-;p1
-valid;True
-mssq;27.0
+;P_t2;P_t1
+valid;True;True
+mssq;14.14;21.0
+pct;59.82;78.91

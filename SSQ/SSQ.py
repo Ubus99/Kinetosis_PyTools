@@ -1,3 +1,4 @@
+import os
 from tkinter import Tk, filedialog
 import Utils.Utils as utl
 
@@ -15,11 +16,11 @@ class WeightedValue:
         self.val += inp * self.weight
 
 
-def scoreSSQ(data: pandas.DataFrame) -> float:
+def scoreSSQ(data: pandas.Series) -> float:
     print(data)
     print()
 
-    n, o, p = weightValues(data["value"])
+    n, o, p = weightValues(data)
     out = (n + o + p) * 3.74
     print("SSQ: " + str(out))
     print()
@@ -82,18 +83,30 @@ def weightValues(data: pandas.Series) -> tuple[float, float, float]:
 
 def importSSQ():
     Tk().withdraw()
-    file_path = filedialog.askopenfile(filetypes=[("CSV", "*.csv; *.CSV")]).name
-    print(file_path)
+    file_path = filedialog.askopenfile(
+        initialdir="./Daten", filetypes=[("CSV", "*.csv; *.CSV")], title="Select SSQ"
+    ).name
+    raw_ssq = utl.readCSV(file_path)
+
+    ssq = {}
+    for t in raw_ssq:
+        print(t + ":")
+        ssq_list[t] = scoreSSQ(raw_ssq[t])
+    print(ssq_list)
+    print()
 
     try:
-        ssq_collection = pandas.read_csv(file_path, sep=";", index_col=0)
+        database_path = filedialog.askopenfile(
+            initialdir="./", filetypes=[("CSV", "*.csv; *.CSV")], title="Select Database"
+        ).name
+        ssq_collection = utl.readCSV(database_path)
+
     except pandas.errors.EmptyDataError:
         print("file is empty")
         ssq_collection = pandas.DataFrame()
 
-    ssq = scoreSSQ(utl.readCSV())
-    ssq_collection[input("name:\n")] = {"ssq": ssq}
-    ssq_collection.to_csv(file_path, sep=";")
+    ssq_collection[os.path.basename(file_path).removesuffix(".csv")] = raw_ssq
+    ssq_collection.to_csv(database_path, sep=";")
 
 
 def main():

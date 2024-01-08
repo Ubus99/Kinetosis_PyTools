@@ -1,7 +1,10 @@
+from tkinter import Tk, filedialog
+import Utils.Utils as utl
+
 import pandas
 
 
-def scoreSingleSUS(data: pandas.Series) -> tuple[float, float]:
+def scoreSingleSUS(data: pandas.Series) -> dict:
     print(data)
     print()
 
@@ -12,21 +15,43 @@ def scoreSingleSUS(data: pandas.Series) -> tuple[float, float]:
     print("> SUS Mean: " + str(sus_mean))
     print()
 
-    return sus_sum, sus_mean
+    return {"sum": sus_sum, "mean": sus_mean}
 
 
 def scoreSUS(data: pandas.DataFrame) -> pandas.DataFrame:
     print(data)
     print()
 
-    out = {}
+    out = pandas.DataFrame()
 
     for k in data:
-        buff = scoreSingleSUS(data[k].squeeze())
-        out[k] = {"sus_sum": buff[0], "sus_mean": buff[1]}
+        out[k] = scoreSingleSUS(data[k].squeeze())
 
-    out = pandas.DataFrame(out)
     print(out)
     print()
 
     return out
+
+
+def importSUS():
+    Tk().withdraw()
+    file_path = filedialog.askopenfile(filetypes=[("CSV", "*.csv; *.CSV")]).name
+    print(file_path)
+
+    try:
+        sus_collection = pandas.read_csv(file_path, sep=";", index_col=0)
+    except pandas.errors.EmptyDataError:
+        print("file is empty")
+        sus_collection = pandas.DataFrame()
+
+    sus = scoreSingleSUS(utl.readCSV()["value"])
+    sus_collection[input("name:\n")] = sus
+    sus_collection.to_csv(file_path, sep=";")
+
+
+def main():
+    importSUS()
+
+
+if __name__ == "__main__":
+    main()
