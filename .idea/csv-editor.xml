@@ -24,13 +24,6 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\MSSQ\Daten\P_t1.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="\MSSQ\Daten\T_1.csv">
           <value>
             <Attribute>
