@@ -84,7 +84,7 @@ def weightValues(data: pandas.Series) -> tuple[float, float, float]:
 def importSSQ():
     Tk().withdraw()
     file_path = filedialog.askopenfile(
-        initialdir="./Daten", filetypes=[("CSV", "*.csv; *.CSV")], title="Select SSQ"
+        initialdir="./Data", filetypes=[("CSV", "*.csv; *.CSV")], title="Select SSQ"
     ).name
     raw_ssq = utl.readCSV(file_path)
 

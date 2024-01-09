@@ -3,6 +3,13 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="D:\Downloads\trackingData_20240108_151748.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\MSSQ\Daten\B_1.csv">
           <value>
             <Attribute>
@@ -67,6 +74,20 @@
           </value>
         </entry>
         <entry key="\SUS\SUS_database.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Unity\Unity_Database.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Unity\unityTestDaten.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />

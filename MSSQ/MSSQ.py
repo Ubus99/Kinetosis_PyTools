@@ -73,7 +73,7 @@ def importMSSQ():
 
     # load input
     file_paths = filedialog.askopenfiles(
-        initialdir="./Daten", filetypes=[("CSV", "*.csv; *.CSV")], title="Select MSSQ"
+        initialdir="./Data", filetypes=[("CSV", "*.csv; *.CSV")], title="Select MSSQ"
     )
 
     # load output
