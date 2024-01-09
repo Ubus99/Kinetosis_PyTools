@@ -20,32 +20,37 @@ def sanitizeCSV(df: pandas.DataFrame) -> pandas.DataFrame:
     return out
 
 
-def preprocessor(df: pandas.DataFrame, res: int, overscan: int) -> pandas.DataFrame:
+def preprocessor(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
     print("preprocessor input:")
     print(df)
 
     print("loading vectors:")
     v_list = []
 
-    for e in df.index:
-        # load floats into vector
-        x = float((df["GazeX"][e]).replace(",", ".")) + 0.5
-        y = float((df["GazeY"][e]).replace(",", ".")) + 0.5
-        v = np.array([x, y])  # .clip(0, 1)
+    for e in df.index:  # load floats into vector
+        x = float((df["GazeX"][e]).replace(",", "."))
+        y = float((df["GazeY"][e]).replace(",", "."))
+        v = np.array([x, y])
         v_list.append(v)
 
-    v_list = np.asarray(v_list)
+    v_list = np.asarray(v_list)  # import list
     print(v_list)
     print()
 
+    print("fitting vectors:")
+    v_mag = np.linalg.norm(v_list, axis=1) * 2  # get magnitude of all vectors
+    v_scaled = v_list / v_mag.max()  # scale such that the largest vector has magnitude 1
+    v_scaled += 0.5
+    print(v_scaled)
+    print()
+
     print("scaling vectors:")
-    v_scaled = v_list * (res - (overscan + 1)) + (overscan / 2)  # for indexing
-    v_scaled
+    v_scaled *= (res - 1)  # scale to fit matrix
     print(v_scaled)
     print()
 
     print("binning vectors:")
-    v_int = np.rint(v_scaled).astype(int).clip(0, res - 1)
+    v_int = np.rint(v_scaled).clip(0, res - 1).astype(int)
     print(v_int)
     print()
 
@@ -59,30 +64,27 @@ def preprocessor(df: pandas.DataFrame, res: int, overscan: int) -> pandas.DataFr
 
 def calculateHeatmap(df: pandas.DataFrame, res: int) -> np.ndarray:
     print("heatmap input:")
-    # with pandas.option_context(
-    # 'display.max_rows', None, 'display.max_columns', None, 'display.precision', 3
-    # ):
     print(df)
 
     print("init grid")
     grid = np.zeros(shape=[res, res], dtype=float)
 
     print("map:")
-    ms_ges = df["timestamp"].max() - df["timestamp"].min()
-
     for e in df.index:
         x = df["x"][e]
         y = df["y"][e]
 
-        if e + 1 < len(df):
+        if e + 1 < len(df):  # get gaze duration
             ms = df["timestamp"][e + 1] - df["timestamp"][e]
-        else:
+        else:  # catch end of array
             ms = df["timestamp"][e] - df["timestamp"][e - 1]
-        grid[x][y] += (ms / ms_ges) * 100 * 100
+        grid[x][y] += ms  # summ-up time on cell
 
-    grid[grid < 1] = 1
-    grid = np.log(grid)
-    grid /= 100
+    ms_ges = df["timestamp"].max() - df["timestamp"].min()
+
+    # grid *= 10000 / ms_ges  # as percentage
+    grid = np.where(grid > 0, np.log10(grid), grid)
+    # grid /= 10
     print(grid.round(2))
     return grid
 
@@ -93,6 +95,7 @@ def drawHeatmap(arr: np.ndarray):
 
     # Generate a custom diverging colormap
     cmap = sns.diverging_palette(230, 20, as_cmap=True)
+    # cmap = sns.color_palette("blend:#7AB,#EDA", as_cmap=True)
 
     # Draw the heatmap with the mask and correct aspect ratio
     sns.heatmap(
@@ -117,7 +120,7 @@ def importData():
         # prep data
         path = p.name
         df_san = sanitizeCSV(utl.readCSV(path))
-        df_prep = preprocessor(df_san, res, 10)
+        df_prep = preprocessor(df_san, res)
 
         # save prep data
         basename = os.path.basename(path).split('.')[0]
