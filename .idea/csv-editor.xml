@@ -80,6 +80,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\Unity\Data\trackingData_20240108_151748_cleaned.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\Unity\Unity_Database.csv">
           <value>
             <Attribute>
