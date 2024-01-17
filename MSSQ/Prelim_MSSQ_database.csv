@@ -1,4 +1,4 @@
-;B_1;P_2;B_2;T_1
-valid;True;True;True;False
-mssq;2.0;14.14;14.5;21.0
-pct;10.01;59.82;60.99;78.91
+;B_1;B_6;P_2;B_2;T_1
+valid;True;True;True;True;False
+mssq;2.0;3.69;14.14;14.5;21.0
+pct;10.01;18.1;59.82;60.99;78.91

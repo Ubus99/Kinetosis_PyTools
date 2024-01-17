@@ -3,35 +3,21 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
-        <entry key="D:\Downloads\trackingData_20240108_151748.csv">
+        <entry key="\MSSQ\Data\B_6.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />
             </Attribute>
           </value>
         </entry>
-        <entry key="\MSSQ\Daten\B_1.csv">
+        <entry key="\MSSQ\Data\P_2.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />
             </Attribute>
           </value>
         </entry>
-        <entry key="\MSSQ\Daten\B_2.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\MSSQ\Daten\P_2.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\MSSQ\Daten\T_1.csv">
+        <entry key="\MSSQ\Data\T_1.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />
@@ -81,20 +67,6 @@
           </value>
         </entry>
         <entry key="\Unity\Data\trackingData_20240108_151748_cleaned.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\Unity\Unity_Database.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\Unity\unityTestDaten.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />

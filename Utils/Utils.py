@@ -11,6 +11,9 @@ def readCSV(path: str) -> pandas.DataFrame:
     return out
 
 
+def loadCSV(defaultPath: str) ->pandas.DataFrame:
+
+
 def parse_vectors(stream: pandas.Series) -> pandas.DataFrame:
     buff = {"x": {}, "y": {}}
     for k, v in stream.items():

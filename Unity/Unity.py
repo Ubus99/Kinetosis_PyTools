@@ -62,12 +62,13 @@ def preprocessor(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
     return out
 
 
-def calculateHeatmap(df: pandas.DataFrame, res: int) -> np.ndarray:
+def calculateHeatmap(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
     print("heatmap input:")
     print(df)
 
     print("init grid")
     grid = np.zeros(shape=[res, res], dtype=float)
+    grid = pandas.DataFrame(grid)
 
     print("map:")
     for e in df.index:
@@ -78,13 +79,18 @@ def calculateHeatmap(df: pandas.DataFrame, res: int) -> np.ndarray:
             ms = df["timestamp"][e + 1] - df["timestamp"][e]
         else:  # catch end of array
             ms = df["timestamp"][e] - df["timestamp"][e - 1]
+
         grid[x][y] += ms  # summ-up time on cell
 
     ms_ges = df["timestamp"].max() - df["timestamp"].min()
 
-    # grid *= 10000 / ms_ges  # as percentage
-    grid = np.where(grid > 0, np.log10(grid), grid)
-    # grid /= 10
+    scale = 1
+    grid.where(
+        grid == 0,
+        other=np.log10(grid * scale) / scale,
+        inplace=True
+    )
+
     print(grid.round(2))
     return grid
 
@@ -99,8 +105,10 @@ def drawHeatmap(arr: np.ndarray):
 
     # Draw the heatmap with the mask and correct aspect ratio
     sns.heatmap(
-        arr, cmap=cmap, square=True, linewidths=.5, cbar_kws={"shrink": .5}, vmin=0
+        arr, cmap=cmap, square=True, linewidths=0.0, cbar_kws={"shrink": .5}, vmin=0
     )
+
+    ax.invert_yaxis()
 
     plt.show()
 
@@ -108,7 +116,7 @@ def drawHeatmap(arr: np.ndarray):
 def importData():
     Tk().withdraw()
 
-    res = 33
+    res = int(11 * 1.5)  # 16 x 16
 
     # load input
     file_paths = filedialog.askopenfiles(
