@@ -54,7 +54,6 @@ def loadCachedPath(cache: CacheHandler, name: str) -> str:
     return path
 
 
-
 def parse_vectors(stream: pandas.Series) -> pandas.DataFrame:
     buff = {"x": {}, "y": {}}
     for k, v in stream.items():
