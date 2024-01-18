@@ -1,13 +1,10 @@
 import os
-import tkinter
+from tkinter import Tk
 
 import pandas
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 import Utils.Utils as utl
-from tkinter import filedialog
-from tkinter import Tk
+from Utils.Cache_Handler import CacheHandler
 
 MSSQ_25th = 5.0
 MSSQ_50th = 11.5
@@ -71,32 +68,33 @@ def scoreMSSQPart(data: pandas.Series, cutoff: int) -> dict:
 def importMSSQ():
     Tk().withdraw()
 
+    cache = CacheHandler("MSSQ", "Lukas Berghegger")
+
     # load input
-    file_paths = filedialog.askopenfiles(
-        initialdir="./Data", filetypes=[("CSV", "*.csv; *.CSV")], title="Select MSSQ"
-    )
+    mssq_paths = utl.multiLoadCSV(cache["dataPath"], "select Data")
+    cache["dataPath"] = os.path.dirname(os.path.abspath(mssq_paths[0].name))
 
     # load output
     try:
-        database_path = filedialog.askopenfile(
-            initialdir="./", filetypes=[("CSV", "*.csv; *.CSV")], title="Select Database"
-        ).name
-        mssq_collection = utl.readCSV(database_path)
+        database_path = utl.loadCSV(cache["databasePath"], "select Database")
+        mssq_collection = utl.parseCSV(database_path)
+        cache["databasePath"] = os.path.dirname(os.path.abspath(database_path))
 
     except pandas.errors.EmptyDataError:
         print("file is empty")
         mssq_collection = pandas.DataFrame()
 
     # process input
-    for p in file_paths:
+    for p in mssq_paths:
         path = p.name
-        mssq = scoreMSSQ(utl.readCSV(path), 2)
+        mssq = scoreMSSQ(utl.parseCSV(path), 2)
 
         mssq_collection[os.path.basename(path).removesuffix(".csv")] = mssq
         mssq_collection.loc["pct"] = mssq_collection.loc["pct"].astype(float)
 
     # store output
     print(mssq_collection)
+    print()
     mssq_collection.sort_values(by="pct", axis="columns", inplace=True)
     mssq_collection.to_csv(database_path, sep=";")
 

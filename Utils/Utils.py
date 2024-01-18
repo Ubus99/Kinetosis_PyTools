@@ -1,17 +1,58 @@
-from tkinter import filedialog
+import os
 from tkinter import Tk
+from tkinter import filedialog
 
 import pandas
 
+from Utils.Cache_Handler import CacheHandler
 
-def readCSV(path: str) -> pandas.DataFrame:
+
+def parseCSV(path: str) -> pandas.DataFrame:
     print(path)
     print()
     out = pandas.read_csv(path, sep=";", index_col=0)
     return out
 
 
-def loadCSV(defaultPath: str) ->pandas.DataFrame:
+def multiLoadCSV(defaultPath: str, title: str) -> [str]:
+    print("Loading Dataframes from filesystem\n")
+    Tk().withdraw()
+    file_paths = filedialog.askopenfiles(
+        initialdir=defaultPath, filetypes=[("CSV", "*.csv; *.CSV")], title=title
+    )
+
+    return file_paths
+
+
+def loadCSV(defaultPath: str, title: str) -> str:
+    print("Loading Dataframe from file\n")
+    Tk().withdraw()
+    file_path = filedialog.askopenfile(
+        initialdir=defaultPath, filetypes=[("CSV", "*.csv; *.CSV")], title=title
+    ).name
+
+    return file_path
+
+
+def listToDict(list: list) -> dict:
+    buff = {}
+    for idx, e in enumerate(list):
+        buff[idx] = e
+    return buff
+
+
+def loadCachedPath(cache: CacheHandler, name: str) -> str:
+    last_path = cache[name + "Path"]
+    default_path = "./"
+
+    if last_path is not None:
+        default_path = last_path
+    path = loadCSV(default_path, "select " + name)
+
+    cache[name + "Path"] = os.path.dirname(os.path.abspath(path))
+
+    return path
+
 
 
 def parse_vectors(stream: pandas.Series) -> pandas.DataFrame:

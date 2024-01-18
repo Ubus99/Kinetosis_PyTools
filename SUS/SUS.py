@@ -44,7 +44,7 @@ def importSUS():
         print("file is empty")
         sus_collection = pandas.DataFrame()
 
-    sus = scoreSingleSUS(utl.readCSV()["value"])
+    sus = scoreSingleSUS(utl.parseCSV()["value"])
     sus_collection[input("name:\n")] = sus
     sus_collection.to_csv(file_path, sep=";")
 

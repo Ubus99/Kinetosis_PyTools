@@ -1,6 +1,5 @@
 import os.path
 from tkinter import Tk
-from tkinter import filedialog
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,6 +7,7 @@ import pandas
 import seaborn as sns
 
 import Utils.Utils as utl
+from Utils.Cache_Handler import CacheHandler
 
 
 def sanitizeCSV(df: pandas.DataFrame) -> pandas.DataFrame:
@@ -15,7 +15,18 @@ def sanitizeCSV(df: pandas.DataFrame) -> pandas.DataFrame:
     print(df)
     df.columns = df.columns.str.replace(' ', '')
     df = df.replace(r"^ +| +$", r"", regex=True)
-    out = df.drop_duplicates(subset='tobii_timestamp').iloc[1:]
+    df = df.drop_duplicates(subset='tobii_timestamp').iloc[1:]
+
+    mode = df["Mode"]
+    mode.reset_index(drop=True, inplace=True)
+    mode.apply(lambda s: str(s).strip())
+    mode.where(
+        mode != "",
+        other=None,
+        inplace=True
+    )
+    a = mode.first_valid_index()
+    out = df.iloc[a:]
 
     return out
 
@@ -56,7 +67,7 @@ def preprocessor(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
 
     print("compositing dataframe.")
     out = pandas.DataFrame(v_int, columns=["x", "y"])
-    timestamp = df["tobii_timestamp"].to_list()
+    timestamp = df["tobii_timestamp"].astype(int).to_list()
     out["timestamp"] = timestamp
     print()
     return out
@@ -95,7 +106,7 @@ def calculateHeatmap(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
     return grid
 
 
-def drawHeatmap(arr: np.ndarray):
+def drawHeatmap(arr: pandas.DataFrame):
     # Set up the matplotlib figure
     f, ax = plt.subplots(figsize=(11, 9))
 
@@ -113,21 +124,21 @@ def drawHeatmap(arr: np.ndarray):
     plt.show()
 
 
-def importData():
+def main():
     Tk().withdraw()
+    cache = CacheHandler("Unity", "Lukas Berghegger")
 
     res = int(11 * 1.5)  # 16 x 16
 
     # load input
-    file_paths = filedialog.askopenfiles(
-        initialdir="./Data", filetypes=[("CSV", "*.csv; *.CSV")], title="Select Data"
-    )
+    file_paths = utl.multiLoadCSV(cache["dataPath"], "select data")
+    cache["dataPath"] = os.path.dirname(os.path.abspath(file_paths[0].name))
 
     # process input
     for p in file_paths:
         # prep data
         path = p.name
-        df_san = sanitizeCSV(utl.readCSV(path))
+        df_san = sanitizeCSV(utl.parseCSV(path))
         df_prep = preprocessor(df_san, res)
 
         # save prep data
@@ -138,10 +149,6 @@ def importData():
         # visualize data
         mx = calculateHeatmap(df_prep, res)
         drawHeatmap(mx)
-
-
-def main():
-    importData()
 
 
 if __name__ == "__main__":

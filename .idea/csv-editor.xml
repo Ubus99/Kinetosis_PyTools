@@ -3,27 +3,6 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
-        <entry key="\MSSQ\Data\B_6.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\MSSQ\Data\P_2.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\MSSQ\Data\T_1.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="\MSSQ\MSSQ_database.csv">
           <value>
             <Attribute>
@@ -32,13 +11,6 @@
           </value>
         </entry>
         <entry key="\MSSQ\Prelim_MSSQ_database.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\SSQ\Daten\P_t2.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />
@@ -60,6 +32,13 @@
           </value>
         </entry>
         <entry key="\SUS\SUS_database.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Unity\Data\trackingData_20240108_151748.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />

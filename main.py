@@ -7,7 +7,7 @@ import seaborn as sns
 import SUS
 from MSSQ import MSSQ
 from Utils import Utils
-from Utils.Utils import readCSV
+from Utils.Utils import parseCSV
 
 
 def drawHeatmap(data_in: pandas.DataFrame):
@@ -28,7 +28,7 @@ def main():
 
     # unity_data = readCSV()
     # drawHeatmap(unity_data[["cx", "cy"]])  # find focus  # find object rest time
-    MSSQ.scoreMSSQ(readCSV(), 5)
+    MSSQ.scoreMSSQ(parseCSV(), 5)
     # SSQ.scoreSSQ(readCSV())
     # sus_score = SUS.scoreSUS(Utils.readCSV())
     plt.show()
