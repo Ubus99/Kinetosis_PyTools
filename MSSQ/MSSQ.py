@@ -3,8 +3,8 @@ from tkinter import Tk
 
 import pandas
 
-import Utils.Utils as utl
-from Utils.Cache_Handler import CacheHandler
+import Utils.misc as utl
+from Utils.CacheManager import CacheManager
 
 MSSQ_25th = 5.0
 MSSQ_50th = 11.5
@@ -68,7 +68,7 @@ def scoreMSSQPart(data: pandas.Series, cutoff: int) -> dict:
 def importMSSQ():
     Tk().withdraw()
 
-    cache = CacheHandler("MSSQ", "Lukas Berghegger")
+    cache = CacheManager("MSSQ", "Lukas Berghegger")
 
     # load input
     mssq_paths = utl.multiLoadCSV(cache["dataPath"], "select Data")

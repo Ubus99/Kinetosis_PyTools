@@ -1,7 +1,7 @@
 import pandas
 
 
-def balanced_latin_squares(n: int) -> pandas.DataFrame:
+def balanced_latin_squares(n: int) -> list:
     """
     Generates an n*n Dataframe filled as a latin quare \n
     numbered 0 to (n - 1) \n
@@ -16,9 +16,10 @@ def balanced_latin_squares(n: int) -> pandas.DataFrame:
     return l
 
 
-def find_cutoff_amount(df: pandas.DataFrame, cutoff: int) -> pandas.Series:
+def count_fields(df: pandas.DataFrame, cutoff: int) -> pandas.Series:
     """
     Counts the number of occurrences of each field in the first [cutoff] columns
+    (mostly for debugging purposes)
 
     :param df: latin-square dataframe
     :param cutoff: number of columns to analyze

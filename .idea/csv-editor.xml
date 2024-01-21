@@ -31,21 +31,14 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\SUS\SUSTestDaten.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\SUS\SUS_database.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\Unity\Data\trackingData_20240108_151748.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\Unity\Data\trackingData_20240108_151748_cleaned.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />

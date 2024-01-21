@@ -2,8 +2,8 @@ import os
 
 import pandas
 
-import Utils.Utils as utl
-from Utils.Cache_Handler import CacheHandler
+import Utils.misc as utl
+from Utils.CacheManager import CacheManager
 from WeightedValue import WeightedValue
 
 
@@ -73,7 +73,7 @@ def weightValues(data: pandas.Series) -> tuple[float, float, float]:
 
 
 def main():
-    cache = CacheHandler("SSQ", "Lukas Berghegger")
+    cache = CacheManager("SSQ", "Lukas Berghegger")
 
     ssq_path = utl.loadCachedPath(cache, "data")
     raw_ssq = utl.parseCSV(ssq_path)

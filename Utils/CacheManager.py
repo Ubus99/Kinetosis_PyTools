@@ -4,7 +4,7 @@ import os
 from platformdirs import user_cache_dir
 
 
-class CacheHandler:
+class CacheManager:
     def __init__(self, name: str, author: str) -> None:
         """
         Creates a cache object that can read and write JSON files to the standard cache directory \n

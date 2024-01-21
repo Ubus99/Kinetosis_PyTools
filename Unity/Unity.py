@@ -1,13 +1,12 @@
 import os.path
 from tkinter import Tk
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas
-import seaborn as sns
 
-import Utils.Utils as utl
-from Utils.Cache_Handler import CacheHandler
+import Eyetracking.Heatmap as ET
+import Utils.misc as utl
+from Utils.CacheManager import CacheManager
 
 
 def sanitizeCSV(df: pandas.DataFrame) -> pandas.DataFrame:
@@ -73,60 +72,9 @@ def preprocessor(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
     return out
 
 
-def calculateHeatmap(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
-    print("heatmap input:")
-    print(df)
-
-    print("init grid")
-    grid = np.zeros(shape=[res, res], dtype=float)
-    grid = pandas.DataFrame(grid)
-
-    print("map:")
-    for e in df.index:
-        x = df["x"][e]
-        y = df["y"][e]
-
-        if e + 1 < len(df):  # get gaze duration
-            ms = df["timestamp"][e + 1] - df["timestamp"][e]
-        else:  # catch end of array
-            ms = df["timestamp"][e] - df["timestamp"][e - 1]
-
-        grid[x][y] += ms  # summ-up time on cell
-
-    ms_ges = df["timestamp"].max() - df["timestamp"].min()
-
-    scale = 1
-    grid.where(
-        grid == 0,
-        other=np.log10(grid * scale) / scale,
-        inplace=True
-    )
-
-    print(grid.round(2))
-    return grid
-
-
-def drawHeatmap(arr: pandas.DataFrame):
-    # Set up the matplotlib figure
-    f, ax = plt.subplots(figsize=(11, 9))
-
-    # Generate a custom diverging colormap
-    cmap = sns.diverging_palette(230, 20, as_cmap=True)
-    # cmap = sns.color_palette("blend:#7AB,#EDA", as_cmap=True)
-
-    # Draw the heatmap with the mask and correct aspect ratio
-    sns.heatmap(
-        arr, cmap=cmap, square=True, linewidths=0.0, cbar_kws={"shrink": .5}, vmin=0
-    )
-
-    ax.invert_yaxis()
-
-    plt.show()
-
-
 def main():
     Tk().withdraw()
-    cache = CacheHandler("Unity", "Lukas Berghegger")
+    cache = CacheManager("Unity", "Lukas Berghegger")
 
     res = int(11 * 1.5)  # 16 x 16
 
@@ -147,8 +95,8 @@ def main():
         df_prep.to_csv(dbpath, sep=";")
 
         # visualize data
-        mx = calculateHeatmap(df_prep, res)
-        drawHeatmap(mx)
+        mx = ET.calculateHeatmap(df_prep, res)
+        ET.drawHeatmap(mx)
 
 
 if __name__ == "__main__":
