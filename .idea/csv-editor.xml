@@ -66,6 +66,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\Unity\testData\trackingData_20240112_111458_Fokus unten rechts_cleaned.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>
