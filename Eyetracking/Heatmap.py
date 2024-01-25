@@ -40,6 +40,7 @@ def calc_heatmap_matrix(df: pandas.DataFrame, res: int, logging: bool = False) -
         print(df)
 
         print("init grid")
+
     grid = np.zeros(shape=[res, res], dtype=float)
     grid = pandas.DataFrame(grid)
 
@@ -59,14 +60,12 @@ def calc_heatmap_matrix(df: pandas.DataFrame, res: int, logging: bool = False) -
 
     ms_ges = df["timestamp"].max() - df["timestamp"].min()  # total eyetracking duration, currently unused
 
-    scale_matrix_log10(grid)
-
     if logging:
         print(grid.round(2))
     return grid
 
 
-def scale_matrix_log10(df: pandas.DataFrame) -> pandas.DataFrame:
+def scale_matrix_log10(df: pandas.DataFrame) -> None:
     """
     Scales a n*m DataFrame using Log10 to increase detail visibility \n
     > log(0) save
@@ -79,7 +78,27 @@ def scale_matrix_log10(df: pandas.DataFrame) -> pandas.DataFrame:
         inplace=True
     )
 
-    return df
+
+def scale_matrix_log2(df: pandas.DataFrame) -> None:
+    """
+    Scales a n*m DataFrame using Log10 to increase detail visibility \n
+    > log(0) save
+    :param df: n * m DataFrame
+    :return: scaled DataFrame df
+    """
+    df.where(
+        df == 0,
+        other=np.log2(df),
+        inplace=True
+    )
+
+
+def matrix_lpf(df: pandas.DataFrame, cutoff: float) -> None:
+    df.where(
+        df > cutoff,
+        other=0,
+        inplace=True
+    )
 
 
 def draw_basic_heatmap(df: pandas.DataFrame) -> [plt.Figure, plt.Axes]:
