@@ -4,9 +4,30 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 
 
-def calculate_heatmap(df: pandas.DataFrame, res: int, logging: bool = False) -> pandas.DataFrame:
+def bin_vectors(arr: np.ndarray, res: int, logging: bool = False) -> np.ndarray:
     """
-    takes a pandas.Dataframe in the shape [timestamp][X, Y] and sorts entries into an n*n grid weighted by time delta.\n
+    takes a numpy array, rounds it using numpy.rint() and then clips it to 0 to res - 1 for indexing
+
+    :param arr: numpy array of positions
+    :param res: binning resolution
+    :param logging: should print log
+    :return: returns binned positions
+    """
+    if logging:
+        print("binning vectors:")
+
+    v_int = np.rint(arr).clip(0, res - 1).astype(int)
+
+    if logging:
+        print(v_int)
+        print()
+
+    return v_int
+
+
+def calc_heatmap_matrix(df: pandas.DataFrame, res: int, logging: bool = False) -> pandas.DataFrame:
+    """
+    takes a pandas.Dataframe in the shape [timestamp][X, Y] and sorts entries into an n*n grid weighted by delta time.\n
     X and Y must be integers from 0 to n-1
 
     :param df: incoming dataframe shaped [timestamp][X, Y]
@@ -45,27 +66,6 @@ def calculate_heatmap(df: pandas.DataFrame, res: int, logging: bool = False) -> 
     return grid
 
 
-def coordinate_binning(arr: np.ndarray, res: int, logging: bool = False) -> np.ndarray:
-    """
-    takes a numpy array, rounds it using numpy.rint() and then clips it to 0 to res - 1 for indexing
-
-    :param arr: numpy array of positions
-    :param res: binning resolution
-    :param logging: should print log
-    :return: returns binned positions
-    """
-    if logging:
-        print("binning vectors:")
-
-    v_int = np.rint(arr).clip(0, res - 1).astype(int)
-
-    if logging:
-        print(v_int)
-        print()
-
-    return v_int
-
-
 def scale_matrix_log10(df: pandas.DataFrame) -> pandas.DataFrame:
     """
     Scales a n*m DataFrame using Log10 to increase detail visibility \n
@@ -82,10 +82,10 @@ def scale_matrix_log10(df: pandas.DataFrame) -> pandas.DataFrame:
     return df
 
 
-def draw_heatmap(arr: pandas.DataFrame) -> [plt.Figure, plt.Axes]:
+def draw_basic_heatmap(df: pandas.DataFrame) -> [plt.Figure, plt.Axes]:
     """
     Creates a basic Seaborn Heatmap Based on an n*m pandas.DataFrame
-    :param arr: n*m matrix of gaze durations
+    :param df: n*m matrix of gaze durations
     :return: returns Figure and Axis of pyplot
     """
     # Set up the matplotlib figure
@@ -97,9 +97,49 @@ def draw_heatmap(arr: pandas.DataFrame) -> [plt.Figure, plt.Axes]:
 
     # Draw the heatmap with the mask and correct aspect ratio
     sns.heatmap(
-        arr, cmap=cmap, square=True, linewidths=0.0, cbar_kws={"shrink": .5}, vmin=0
+        df, cmap=cmap, square=True, linewidths=0.0, cbar_kws={"shrink": .5}, vmin=0
     )
 
     ax.invert_yaxis()
 
     return f, ax
+
+
+def draw_marginal_heatmap(df: pandas.DataFrame) -> sns.JointGrid:
+    # partially taken from https://stackoverflow.com/a/65921757/12614118
+
+    cmap = sns.diverging_palette(230, 20, as_cmap=True)
+
+    g = sns.jointplot(data=df, x=0, y=1, height=9, kind='hist')
+    g.ax_marg_y.cla()
+    g.ax_marg_x.cla()
+
+    sns.heatmap(
+        df, cmap=cmap, square=True, linewidths=0.0, cbar=False, vmin=0, ax=g.ax_joint
+    )
+
+    g.ax_joint.tick_params(
+        left=False, right=False, labelleft=False,
+        labelbottom=False, bottom=False
+    )
+
+    g.ax_joint.invert_yaxis()
+
+    y_data = df.sum(1)
+    y_len = len(y_data)
+    g.ax_marg_y.barh(np.arange(0.5, y_len), width=y_data)
+
+    x_data = df.sum(0)
+    x_len = len(x_data)
+    g.ax_marg_x.bar(np.arange(0.5, x_len), height=x_data)
+
+    # remove ticks between heatmao and histograms
+    g.ax_marg_x.tick_params(axis='x', bottom=False, labelbottom=False)
+    g.ax_marg_y.tick_params(axis='y', left=False, labelleft=False)
+    # remove ticks showing the heights of the histograms
+    g.ax_marg_x.tick_params(axis='y', left=False, labelleft=False)
+    g.ax_marg_y.tick_params(axis='x', bottom=False, labelbottom=False)
+
+    g.fig.subplots_adjust(hspace=0.05, wspace=0.02)  # less spaced needed when there are no tick labels
+
+    return g

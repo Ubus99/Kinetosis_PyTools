@@ -2,6 +2,7 @@ import os.path
 from tkinter import Tk
 from typing import Any
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas
 
@@ -47,7 +48,7 @@ def extractValidData(df: pandas.DataFrame, key: Any, logging: bool = False) -> p
     return out  # return only valid data
 
 
-def preprocessor(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
+def preprocessor_1(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
     print("preprocessor input:")
     print(df)
 
@@ -64,7 +65,7 @@ def preprocessor(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
     print(v_list)
     print()
 
-    print("fitting vectors:")
+    print("fitting vectors:")  # this means that positions are no longer comparable between captures, but spread is
     v_mag = np.linalg.norm(v_list, axis=1) * 2  # get magnitude of all vectors
     v_scaled = v_list / v_mag.max()  # scale such that the largest vector has magnitude 1
     v_scaled += 0.5  # change coordinates from -0.5 to + 0.5 notation to 0 to 1 notation
@@ -76,7 +77,7 @@ def preprocessor(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
     print(v_scaled)
     print()
 
-    v_int = ET.coordinate_binning(v_scaled, res, True)
+    v_int = ET.bin_vectors(v_scaled, res, True)
 
     print("compositing dataframe.")
     out = pandas.DataFrame(v_int, columns=["x", "y"])
@@ -90,7 +91,7 @@ def main():
     Tk().withdraw()
     cache = CacheManager("Unity", "Lukas Berghegger")
 
-    res = int(11 * 1.5)  # 16 x 16
+    res = int(11 * 50)  # 16 x 16
 
     # load input
     file_paths = utl.multiLoadCSV(cache["dataPath"], "select data")
@@ -98,23 +99,42 @@ def main():
 
     # process input
     for p in file_paths:
+        # enumerate paths
+        src_path = p.name
+
+        src_name = os.path.basename(src_path).split('.')[0]
+        dst_dir = os.path.dirname(src_path) + "/"
+
+        dbpath = dst_dir + src_name + "_cleaned.csv"
+        img_path = dst_dir + src_name + ".png"
+
         # prep data
-        path = p.name
-        df_san = sanitizeCSV(utl.parseCSV(path), "tobii_timestamp", True)
-        df_prep = preprocessor(df_san, res)
+        df_san = sanitizeCSV(utl.parseCSV(src_path), "tobii_timestamp", True)
+        df_pre = preprocessor_1(df_san, res)
 
         # save prep data
-        basename = os.path.basename(path).split('.')[0]
-        dbpath = os.path.dirname(path) + "/" + basename + "_cleaned.csv"
-        df_prep.to_csv(dbpath, sep=";")
+        df_pre.to_csv(dbpath, sep=";")
 
-        # visualize data
-        mx = ET.calculate_heatmap(df_prep, res)
-        f, ax = ET.draw_heatmap(mx)
-        img_path = path.split(".")[0] + ".png"
-        f.savefig(img_path)
+        # create virtual Heatmap
+        hm = ET.calc_heatmap_matrix(df_pre, res, True)
 
-        # plt.show()
+        flat_x = hm.sum(0)
+        dev_x = flat_x.std()
+        print("vertical deviation")
+        print(dev_x)
+
+        flat_y = hm.sum(1)
+        dev_y = flat_y.std()
+        print("horizontal deviation")
+        print(dev_y)
+
+        # visualize Heatmap
+        g = ET.draw_marginal_heatmap(hm)
+
+        # f, ax = ET.draw_heatmap(hm)
+        g.savefig(img_path)
+
+        plt.show()
 
 
 if __name__ == "__main__":
