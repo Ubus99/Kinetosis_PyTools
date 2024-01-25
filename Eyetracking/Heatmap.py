@@ -4,9 +4,10 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 
 
-def calculateHeatmap(df: pandas.DataFrame, res: int, logging: bool = False) -> pandas.DataFrame:
+def calculate_heatmap(df: pandas.DataFrame, res: int, logging: bool = False) -> pandas.DataFrame:
     """
-    takes a pandas.Dataframe in the shape [timestamp][X, Y] and sorts entries into an n*n grid weighted by time delta.
+    takes a pandas.Dataframe in the shape [timestamp][X, Y] and sorts entries into an n*n grid weighted by time delta.\n
+    X and Y must be integers from 0 to n-1
 
     :param df: incoming dataframe shaped [timestamp][X, Y]
     :param res: resolution of outgoing pandas.Dataframe
@@ -35,13 +36,34 @@ def calculateHeatmap(df: pandas.DataFrame, res: int, logging: bool = False) -> p
 
         grid[x][y] += ms  # summ-up time on cell
 
-    ms_ges = df["timestamp"].max() - df["timestamp"].min()
+    ms_ges = df["timestamp"].max() - df["timestamp"].min()  # total eyetracking duration, currently unused
 
     scale_matrix_log10(grid)
 
     if logging:
         print(grid.round(2))
     return grid
+
+
+def coordinate_binning(arr: np.ndarray, res: int, logging: bool = False) -> np.ndarray:
+    """
+    takes a numpy array, rounds it using numpy.rint() and then clips it to 0 to res - 1 for indexing
+
+    :param arr: numpy array of positions
+    :param res: binning resolution
+    :param logging: should print log
+    :return: returns binned positions
+    """
+    if logging:
+        print("binning vectors:")
+
+    v_int = np.rint(arr).clip(0, res - 1).astype(int)
+
+    if logging:
+        print(v_int)
+        print()
+
+    return v_int
 
 
 def scale_matrix_log10(df: pandas.DataFrame) -> pandas.DataFrame:
@@ -60,15 +82,16 @@ def scale_matrix_log10(df: pandas.DataFrame) -> pandas.DataFrame:
     return df
 
 
-def drawHeatmap(arr: pandas.DataFrame) -> None:
+def draw_heatmap(arr: pandas.DataFrame) -> [plt.Figure, plt.Axes]:
     """
-    Displays a basic Seaborn Heatmap Based on an n*m pandas.DataFrame
+    Creates a basic Seaborn Heatmap Based on an n*m pandas.DataFrame
     :param arr: n*m matrix of gaze durations
+    :return: returns Figure and Axis of pyplot
     """
     # Set up the matplotlib figure
     f, ax = plt.subplots(figsize=(11, 9))
 
-    # Generate a custom diverging colormap
+    # Generate a custom colormap
     cmap = sns.diverging_palette(230, 20, as_cmap=True)
     # cmap = sns.color_palette("blend:#7AB,#EDA", as_cmap=True)
 
@@ -79,4 +102,4 @@ def drawHeatmap(arr: pandas.DataFrame) -> None:
 
     ax.invert_yaxis()
 
-    plt.show()
+    return f, ax
