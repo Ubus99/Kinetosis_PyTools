@@ -2,7 +2,6 @@ import os.path
 from tkinter import Tk
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas
 
@@ -12,8 +11,10 @@ from Utils.CacheManager import CacheManager
 
 
 def sanitizeCSV(df: pandas.DataFrame, key: Any, logging: bool = False) -> pandas.DataFrame:
-    print("sanitizer input:")
-    print(df)
+    if logging:
+        print("sanitizer input:")
+        print(df)
+
     df.columns = df.columns.str.strip()  # strip whitespace from columns todo why apply to columns not whole frame?
     df = df.replace(r"^ +| +$", r"", regex=True)  # forgot what this does :(
     df = removeDuplicates(df, key).iloc[1:]  # cull duplicates, then cut index for further processing
@@ -48,11 +49,14 @@ def extractValidData(df: pandas.DataFrame, key: Any, logging: bool = False) -> p
     return out  # return only valid data
 
 
-def preprocessor_1(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
-    print("preprocessor input:")
-    print(df)
+def pack_vectors(df: pandas.DataFrame, logging: bool = False) -> pandas.DataFrame:
+    if logging:
+        print("packing vectors!")
+        print("input:")
+        print(df)
 
-    print("loading vectors:")
+    if logging:
+        print("loading vectors:")
     v_list = []
 
     for e in df.index:  # load floats into vector, replaces "," notation with "." notation
@@ -61,37 +65,79 @@ def preprocessor_1(df: pandas.DataFrame, res: int) -> pandas.DataFrame:
         v = np.array([x, y])  # stores vector as 2d numpy array
         v_list.append(v)  # append vector to list of vectors
 
-    v_list = np.asarray(v_list)  # import list
-    print(v_list)
-    print()
+    v_list = np.asarray(v_list)  # import list todo hack
+    if logging:
+        print(v_list)
+        print()
 
-    print("fitting vectors:")  # this means that positions are no longer comparable between captures, but spread is
-    v_mag = np.linalg.norm(v_list, axis=1) * 2  # get magnitude of all vectors
-    v_scaled = v_list / v_mag.max()  # scale such that the largest vector has magnitude 1
-    v_scaled += 0.5  # change coordinates from -0.5 to + 0.5 notation to 0 to 1 notation
-    print(v_scaled)
-    print()
+    if logging:
+        print("fitting vectors:")  # this means that positions are no longer comparable between captures, but spread is
+    v_mag = np.linalg.norm(v_list, axis=1)  # get magnitude of all vectors
+    v_fitted = v_list / v_mag.max()  # scale such that the largest vector has magnitude 1
+    v_fitted /= 2  # account for values being centered around 0.5
+    v_fitted += 0.5  # translate coordinates from -0.5 to + 0.5 notation to 0 to 1 notation
 
-    print("scaling vectors:")
-    v_scaled *= (res - 1)  # scale to fit matrix
-    print(v_scaled)
-    print()
+    if logging:
+        print(v_fitted)
+        print()
 
-    v_int = ET.bin_vectors(v_scaled, res, True)
+    if logging:
+        print("compositing dataframe.")
+        print()
 
-    print("compositing dataframe.")
-    out = pandas.DataFrame(v_int, columns=["x", "y"])
+    out = pandas.DataFrame(v_fitted, columns=["x", "y"])
     timestamp = df["tobii_timestamp"].astype(int).to_list()
     out["timestamp"] = timestamp
-    print()
+
     return out
+
+
+def scale_vectors(df: pandas.DataFrame, res: int, logging: bool = False) -> pandas.DataFrame:
+    if logging:
+        print("scaling vectors to fit matrix!")
+        print("input:")
+        print(df)
+
+    if logging:
+        print("scaling vectors:")
+
+    v_list = df[["x", "y"]] * (res - 1)  # scale to fit matrix width
+
+    if logging:
+        print(df)
+        print()
+
+    v_int = ET.bin_vectors(v_list, res, logging)
+
+    if logging:
+        print("compositing dataframe.")
+        print()
+
+    out = pandas.DataFrame(v_int, columns=["x", "y"])
+    out["timestamp"] = df["timestamp"]
+
+    return out
+
+
+def calc_std(df: pandas.DataFrame) -> pandas.Series:
+    # should probably include covariance matrix
+    print("deviation:")
+    gaze_dev = df.std()  # calc std for x & y
+    gaze_abs = np.linalg.norm(df, axis=1)  # calculate magnitude of vectors
+    gaze_abs_dev = gaze_abs.std()  # calc std of magnitude
+
+    std = gaze_dev
+    std["abs_dev"] = gaze_abs_dev
+    print(std.round(3))
+
+    return std
 
 
 def main():
     Tk().withdraw()
     cache = CacheManager("Unity", "Lukas Berghegger")
 
-    res = int(11 * 50)  # 16 x 16
+    res = int(11 * 3)  # 16 x 16
 
     # load input
     file_paths = utl.multiLoadCSV(cache["dataPath"], "select data")
@@ -103,38 +149,40 @@ def main():
         src_path = p.name
 
         src_name = os.path.basename(src_path).split('.')[0]
-        dst_dir = os.path.dirname(src_path) + "/"
+        dst_dir = os.path.dirname(src_path) + "/artifacts/"
+        if not os.path.exists(dst_dir):
+            os.mkdir(dst_dir)
 
-        dbpath = dst_dir + src_name + "_cleaned.csv"
+        dbpath = dst_dir + src_name + "_eval.csv"
         img_path = dst_dir + src_name + ".png"
 
-        # prep data
-        df_san = sanitizeCSV(utl.parseCSV(src_path), "tobii_timestamp", True)
-        df_pre = preprocessor_1(df_san, res)
+        # prepare data
+        san_data = sanitizeCSV(utl.parseCSV(src_path), "tobii_timestamp", False)
+        gaze_pos = pack_vectors(san_data)
+        gaze_pos_scaled = scale_vectors(gaze_pos, res)
 
         # save prep data
-        df_pre.to_csv(dbpath, sep=";")
+        # gaze_pos_scaled.to_csv(dbpath, sep=";")
 
         # create virtual Heatmap
-        hm = ET.calc_heatmap_matrix(df_pre, res, True)
+        hm = ET.calc_heatmap_matrix(gaze_pos_scaled, res, False)
 
-        flat_x = hm.sum(0)
-        dev_x = flat_x.std()
-        print("vertical deviation")
-        print(dev_x)
+        # postprocessing
+        # quantile = np.quantile(hm.to_numpy().flatten(), 0.5)
+        # print("lowest quartile cuttoff:")
+        # print(quantile)
+        # ET.matrix_lpf(hm, quantile)  # remove outliers
+        # ET.scale_matrix_log2(hm)  # scale for visual reasons
 
-        flat_y = hm.sum(1)
-        dev_y = flat_y.std()
-        print("horizontal deviation")
-        print(dev_y)
+        # calculate standard deviation
+        calc_std(gaze_pos[["x", "y"]]).round(3).to_csv(dbpath, sep=";")
 
         # visualize Heatmap
         g = ET.draw_marginal_heatmap(hm)
 
-        # f, ax = ET.draw_heatmap(hm)
         g.savefig(img_path)
 
-        plt.show()
+    # plt.show()
 
 
 if __name__ == "__main__":
