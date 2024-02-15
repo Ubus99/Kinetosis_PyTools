@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Any
 
 from platformdirs import user_cache_dir
 
@@ -16,6 +17,7 @@ class CacheManager:
         print("loading cache for " + author + ", " + name)
 
         self.data = {}
+
         self.path = None
 
         self.load(name, author)

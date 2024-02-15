@@ -5,6 +5,7 @@ import pandas
 
 import Utils.misc as utl
 from Utils.CacheManager import CacheManager
+from Utils.SQLAlchemy import SQLAlchemyHelper
 
 MSSQ_25th = 5.0
 MSSQ_50th = 11.5
@@ -22,23 +23,25 @@ def calcMSSQPercentile(MSSQ_Raw: float) -> float:
     return pct
 
 
-def scoreMSSQ(data: pandas.DataFrame, cutoff: int) -> dict:
+def scoreMSSQ(data: pandas.DataFrame, cutoff: int) -> pandas.Series:
     print(data)
 
     print("Kind:")
     buff = scoreMSSQPart(data["Kind"], cutoff)
-    mssq = buff["mssq"]
-    valid = buff["valid"]
+    mssq = float(buff["mssq"])
+    valid = bool(buff["valid"])
 
     print("Erwachsen:")
     buff = scoreMSSQPart(data["Erwachsen"], cutoff)
-    mssq += buff["mssq"]
-    valid |= buff["valid"]
+    mssq += float(buff["mssq"])
+    valid |= bool(buff["valid"])
 
     pct = calcMSSQPercentile(mssq)
 
     print("Total: " + str(valid) + ", " + str(mssq) + ", " + str(pct))
-    return {"valid": valid, "mssq": float(mssq), "pct": float(pct)}
+
+    out = pandas.Series({"valid": valid, "mssq": float(mssq), "pct": float(pct)})
+    return out
 
 
 def scoreMSSQPart(data: pandas.Series, cutoff: int) -> dict:
@@ -70,6 +73,15 @@ def importMSSQ():
 
     cache = CacheManager("MSSQ", "Lukas Berghegger")
 
+    # path = filedialog.askopenfile(
+    #     initialdir=str(cache["path"]),
+    #     filetypes=[("SQLite", "*.db")],
+    #     title="load Database"
+    # ).name
+    # cache["path"] = path
+
+    db = SQLAlchemyHelper("../test.db", True)
+
     # load input
     mssq_paths = utl.multiLoadCSV(cache["dataPath"], "select Data")
     cache["dataPath"] = os.path.dirname(os.path.abspath(mssq_paths[0].name))
@@ -82,7 +94,7 @@ def importMSSQ():
 
     except pandas.errors.EmptyDataError:
         print("file is empty")
-        mssq_collection = pandas.DataFrame()
+        mssq_collection = pandas.DataFrame(index=["valid", "mssq", "pct"])
 
     # process input
     for p in mssq_paths:
@@ -90,13 +102,15 @@ def importMSSQ():
         mssq = scoreMSSQ(utl.parseCSV(path), 2)
 
         mssq_collection[os.path.basename(path).removesuffix(".csv")] = mssq
-        mssq_collection.loc["pct"] = mssq_collection.loc["pct"].astype(float)
 
     # store output
     print(mssq_collection)
     print()
     mssq_collection.sort_values(by="pct", axis="columns", inplace=True)
     mssq_collection.to_csv(database_path, sep=";")
+    utl.replace_in_file(database_path, ".", ",")
+
+    mssq_collection.to_sql("MSSQ", db.engine, if_exists="replace")  # todo change to use numerical IDX and foreign key
 
 
 def main():

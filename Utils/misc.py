@@ -12,7 +12,7 @@ VALID_FILETYPES = ("CSV", "*.csv *.CSV *.txt *.TXT")
 def parseCSV(path: str) -> pandas.DataFrame:
     print(path)
     print()
-    out = pandas.read_csv(path, sep=";", index_col=0)
+    out = pandas.read_csv(path, sep=";", index_col=0, decimal=",")
     return out
 
 
@@ -59,3 +59,19 @@ def parse_vectors(stream: pandas.Series) -> pandas.DataFrame:
     print(buff)
 
     return buff
+
+
+def replace_in_file(path: str, search: str, repl: str) -> None:
+    file_in = open(path, "r")
+
+    text = ""
+
+    for l in file_in:
+        line = l.strip()
+        line = line.replace(search, repl)
+        text += line + "\n"
+    file_in.close()
+
+    file_out = open(path, "w")
+    file_out.write(text)
+    file_out.close()

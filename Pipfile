@@ -25,6 +25,7 @@ seaborn = "==0.13.0"
 six = "==1.16.0"
 tzdata = "==2023.3"
 virtualenv = "==20.25.0"
+sqlalchemy = "*"
 
 [dev-packages]
 

@@ -137,7 +137,7 @@ def main():
     Tk().withdraw()
     cache = CacheManager("Unity", "Lukas Berghegger")
 
-    res = int(11 * 3)  # 16 x 16
+    res = int(11 * 5)  # 55 x 55
 
     # load input
     file_paths = utl.multiLoadCSV(cache["dataPath"], "select data")
@@ -155,6 +155,7 @@ def main():
 
         dbpath = dst_dir + src_name + "_eval.csv"
         img_path = dst_dir + src_name + ".png"
+        w_img_path = dst_dir + src_name + "_log2.png"
 
         # prepare data
         san_data = sanitizeCSV(utl.parseCSV(src_path), "tobii_timestamp", False)
@@ -167,20 +168,16 @@ def main():
         # create virtual Heatmap
         hm = ET.calc_heatmap_matrix(gaze_pos_scaled, res, False)
 
-        # postprocessing
-        # quantile = np.quantile(hm.to_numpy().flatten(), 0.5)
-        # print("lowest quartile cuttoff:")
-        # print(quantile)
-        # ET.matrix_lpf(hm, quantile)  # remove outliers
-        # ET.scale_matrix_log2(hm)  # scale for visual reasons
-
         # calculate standard deviation
         calc_std(gaze_pos[["x", "y"]]).round(3).to_csv(dbpath, sep=";")
 
         # visualize Heatmap
         g = ET.draw_marginal_heatmap(hm)
-
         g.savefig(img_path)
+
+        ET.scale_matrix_log10(hm)
+        g = ET.draw_marginal_heatmap(hm)
+        g.savefig(w_img_path)
 
     # plt.show()
 
