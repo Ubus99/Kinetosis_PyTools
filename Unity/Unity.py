@@ -4,8 +4,10 @@ from typing import Any
 
 import numpy as np
 import pandas
+from matplotlib import pyplot as plt
 
 import Eyetracking.Heatmap as ET
+import Utils.Clustering as clustering
 import Utils.misc as utl
 from Utils.CacheManager import CacheManager
 
@@ -60,8 +62,8 @@ def pack_vectors(df: pandas.DataFrame, logging: bool = False) -> pandas.DataFram
     v_list = []
 
     for e in df.index:  # load floats into vector, replaces "," notation with "." notation
-        x = float((df["GazeX"][e]).replace(",", "."))
-        y = float((df["GazeY"][e]).replace(",", "."))
+        x = float((df["GazeX"][e]))  # .replace(",", "."))
+        y = float((df["GazeY"][e]))  # .replace(",", "."))
         v = np.array([x, y])  # stores vector as 2d numpy array
         v_list.append(v)  # append vector to list of vectors
 
@@ -129,8 +131,62 @@ def calc_std(df: pandas.DataFrame) -> pandas.Series:
     std = gaze_dev
     std["abs_dev"] = gaze_abs_dev
     print(std.round(3))
+    print()
 
     return std
+
+
+def extract_name(path: str):
+    src_name = os.path.basename(path).split('.')[0]
+    name = src_name.split("_")
+    return name[0] + "_" + name[1]
+
+
+def generate_heatmap(df: pandas.DataFrame, res: int, out_path: str):
+    img_path = out_path + ".png"
+    w_img_path = out_path + "_log2.png"
+
+    # create virtual Heatmap
+    hm = ET.calc_heatmap_matrix(df, res, False)
+
+    # visualize Heatmap
+    g = ET.draw_marginal_heatmap(hm)
+    g.savefig(img_path)
+
+    ET.scale_matrix_log10(hm)
+    g = ET.draw_marginal_heatmap(hm)
+    g.savefig(w_img_path)
+
+
+def generate_scatterplot(df: pandas.DataFrame, out_path: str, labels: list[int] = None):
+    img_path = out_path + ".png"
+
+    weight = []
+
+    for e in df.index:
+        if e + 1 < len(df):  # get gaze duration
+            ms = df["timestamp"][e + 1] - df["timestamp"][e]
+        else:  # catch end of array
+            ms = df["timestamp"][e] - df["timestamp"][e - 1]
+
+        weight.append(ms)
+
+    # visualize scatterplot
+    g = ET.draw_scatterplot(df, weight, labels)
+    # g.savefig(img_path)
+
+    plt.show()
+
+
+def generate_deviation_data(df: pandas.DataFrame, k: int, out_path: str):
+    dev = calc_std(df[["x", "y"]])
+
+    dev["weighted"] = dev["abs_dev"] * k
+
+    # save deviation data
+    dev.round(3).to_csv(out_path, sep=";", decimal=",")
+
+    return dev
 
 
 def main():
@@ -143,43 +199,41 @@ def main():
     file_paths = utl.multiLoadCSV(cache["dataPath"], "select data")
     cache["dataPath"] = os.path.dirname(os.path.abspath(file_paths[0].name))
 
+    db_path = utl.loadCSV(cache["dbPath"], "select dataBase")
+    cache["dbPath"] = os.path.dirname(os.path.abspath(db_path))
+
     # process input
     for p in file_paths:
         # enumerate paths
         src_path = p.name
 
-        src_name = os.path.basename(src_path).split('.')[0]
+        src_name = extract_name(src_path)
         dst_dir = os.path.dirname(src_path) + "/artifacts/"
         if not os.path.exists(dst_dir):
             os.mkdir(dst_dir)
 
-        dbpath = dst_dir + src_name + "_eval.csv"
-        img_path = dst_dir + src_name + ".png"
-        w_img_path = dst_dir + src_name + "_log2.png"
+        eval_path = dst_dir + src_name + "_eval.csv"
 
         # prepare data
         san_data = sanitizeCSV(utl.parseCSV(src_path), "tobii_timestamp", False)
         gaze_pos = pack_vectors(san_data)
         gaze_pos_scaled = scale_vectors(gaze_pos, res)
 
-        # save prep data
-        # gaze_pos_scaled.to_csv(dbpath, sep=";")
+        # calculate k-means
+        k, labels = clustering.find_opt_k(gaze_pos, 5)
 
-        # create virtual Heatmap
-        hm = ET.calc_heatmap_matrix(gaze_pos_scaled, res, False)
+        dev = generate_deviation_data(gaze_pos, k, eval_path)
+        # generate_heatmap(gaze_pos_scaled, res, dst_dir + src_name)
+        generate_scatterplot(gaze_pos, dst_dir + src_name, labels)
 
-        # calculate standard deviation
-        calc_std(gaze_pos[["x", "y"]]).round(3).to_csv(dbpath, sep=";")
+        # save DB
+        try:
+            db = utl.parseCSV(db_path)
+        except pandas.errors.EmptyDataError:
+            db = pandas.DataFrame()
 
-        # visualize Heatmap
-        g = ET.draw_marginal_heatmap(hm)
-        g.savefig(img_path)
-
-        ET.scale_matrix_log10(hm)
-        g = ET.draw_marginal_heatmap(hm)
-        g.savefig(w_img_path)
-
-    # plt.show()
+        db[src_name] = dev.round(3)
+        db.to_csv(db_path, sep=";", decimal=",")
 
 
 if __name__ == "__main__":

@@ -2,9 +2,7 @@ from tkinter import Tk
 
 import sqlalchemy
 from sqlalchemy import MetaData
-from sqlalchemy.orm import Session
 
-from SSQ.SSQ_Class import SSQ
 from Utils.CacheManager import CacheManager
 
 
@@ -30,15 +28,6 @@ def main():
     # cache["path"] = path
 
     db = SQLAlchemyHelper("../test.db", True)
-
-    db.InitTable(SSQ.metadata)
-    ssq1 = SSQ(n=0.1, o=0.1, p=0.1, ts=0.1)
-
-    print(ssq1)
-    session = Session(db.engine)
-    session.add(ssq1)
-    session.flush()
-    session.commit()
 
     # db.metadata.create_all(db.engine)  # executes previously  registered statements
 

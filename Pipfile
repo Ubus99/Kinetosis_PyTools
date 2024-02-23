@@ -26,6 +26,8 @@ six = "==1.16.0"
 tzdata = "==2023.3"
 virtualenv = "==20.25.0"
 sqlalchemy = "*"
+scikit-learn = "*"
+kneed = "*"
 
 [dev-packages]
 

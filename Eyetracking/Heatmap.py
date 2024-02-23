@@ -162,3 +162,19 @@ def draw_marginal_heatmap(df: pandas.DataFrame) -> sns.JointGrid:
     g.fig.subplots_adjust(hspace=0.05, wspace=0.02)  # less spaced needed when there are no tick labels
 
     return g
+
+
+def draw_scatterplot(df: pandas.DataFrame, weight: list[float] = None, labels: list[int] = None) -> plt.axis:
+    if labels is not None:
+        df["cluster"] = labels
+
+    if weight is not None:
+        df["weight"] = weight
+
+    if "cluster" in df:
+        plot = sns.scatterplot(df, x="x", y="y", hue="cluster", size="weight")
+
+    else:
+        plot = sns.scatterplot(df, x="x", y="y", size="weight")
+
+    return plot
